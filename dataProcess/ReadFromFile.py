@@ -25,7 +25,5 @@ def getData(filename, input_lang, output_lang) :
 
     return corpus
 
-corpus = getData('BTHO0138')
-
 
 

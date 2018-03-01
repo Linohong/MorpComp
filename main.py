@@ -8,18 +8,21 @@ torch.manual_seed(1)
 # LOAD DATA PART
 print("\nLoading Data...")
 import dataProcess.ReadFromFile as D_read
+import dataProcess.Make_ExamplePair as D_pair
 import dataProcess.Lang as Lang
 filename = ['BTHO0140']
 input_lang = Lang('morp_decomposed')
 output_lang = Lang('morp_composed')
-corpus = D_read.getData(filename[0], input_lang, output_lang)
+corpus = D_read.getData(filename[0], input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+print("Done Loading!!!")
 
 # Train
 import Train_KFold as T
-import Evaluate as E
+# import Evaluate as E
 from sklearn.model_selection import KFold
 trainSize = Args.args.train_size
-training_pairs = [D.variablesFromPair(input_lang, output_lang, random.choice(pairs)) for i in range(trainSize)] # check if repetition exists
+pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+training_pairs = [D_pair.variableFromPair(pairs) for i in range(trainSize)] # now returned as Variable of indexes
 kf = KFold(n_splits=Args.args.kfold)
 kf.get_n_splits(training_pairs)
 
