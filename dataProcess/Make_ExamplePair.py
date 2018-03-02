@@ -4,7 +4,7 @@ import Arguments as Args
 
 SOS_token = 0
 EOS_token = 1
-SP_token = 2
+SPACE_token = 2
 
 # make korean sentence into list of indexes of syllables
 def MakePair(corpus, input_lang, output_lang) :
@@ -21,13 +21,13 @@ def MakePair(corpus, input_lang, output_lang) :
             output_word = word[0]
             for morp_tuple in input_word : # ('한국', 'NNP'), ('의', 'JKG')
                 for syll in morp_tuple[0] : # 한, 국
-                    cur_input_sent.append(input_lang.syll2index(syll))
-                cur_input_sent.append(input_lang.syll2index(morp_tuple[1])) #'NNP'
+                    cur_input_sent.append(input_lang.syll2index[syll])
+                cur_input_sent.append(input_lang.syll2index[morp_tuple[1]]) #'NNP'
 
             for syll in output_word :
-                cur_output_sent.append(output_lang.syll2index(syll))
+                cur_output_sent.append(output_lang.syll2index[syll])
             if ( ind != len(sent) ) :
-                cur_output_sent.append(output_lang.syll2index('SP'))
+                cur_output_sent.append(output_lang.syll2index['SPACE'])
 
         input_sent.append(cur_input_sent)
         output_sent.append(cur_output_sent)

@@ -12,7 +12,7 @@ class EncoderRNN(nn.Module) :
         self.gru = nn.GRU(hidden_size, hidden_size)
 
     def forward(self, input, hidden) :
-        embedded = self.embedding(input).view(1, 1, -1)
+        embedded = self.embedding(input).view(len(input), 1, -1)
         output = embedded
         output, hidden = self.gru(output, hidden)
         return output, hidden

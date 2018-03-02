@@ -5,7 +5,7 @@ import Network
 import torch.nn as nn
 import time
 import random
-import dataProcess.DataProcess as D
+import dataProcess.Make_ExamplePair as D
 import etc.peripheralTools as PT
 import Arguments as Args
 
@@ -20,12 +20,13 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     # Encoder Part #
     enc_hidden = EncNet.initHidden() # initialized hidden Variable.
-    enc_outputs = Variable(torch.zeros(max_length, EncNet.hidden_size)) # zeros of max_length * EncNet
+    enc_outputs = Variable(torch.zeros(input_length, EncNet.hidden_size)) # zeros of input_length * EncNet
     enc_outputs = enc_outputs if Args.args.no_gpu else enc_outputs.cuda()
 
-    for ei in range(input_length) :
-        enc_output, enc_hidden = EncNet(input_sent[ei], enc_hidden)
-        enc_outputs[ei] = enc_output[0][0]
+    # for ei in range(input_length) :
+    #     enc_output, enc_hidden = EncNet(input_sent[ei], enc_hidden)
+    #     enc_outputs[ei] = enc_output[0][0]
+    enc_output, enc_hidden = EncNet(input_sent, enc_hidden)
 
     # Decoder Part #
     dec_hidden = enc_hidden # initialize decoder's hidden state as enc_hidden state

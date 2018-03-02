@@ -1,9 +1,9 @@
 class Lang :
     def __init__ (self, name) :
         self.name = name
-        self.syll2index = {} # syllable to index
+        self.syll2index = {'SOS': 0, 'EOS': 1, 'SPACE': 2} # syllable to index
         self.syll2count = {} # count the number of occurrences of syllables in the corpus
-        self.index2syll = {0: "SOS", 1:"EOS", 2:"SP"}
+        self.index2syll = {0: "SOS", 1:"EOS", 2:"SPACE"}
         self.n_sylls = 3
 
     def addWord(self, Word) :
