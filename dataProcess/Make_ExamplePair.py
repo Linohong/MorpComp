@@ -29,9 +29,10 @@ def MakePair(corpus, input_lang, output_lang) :
             if ( ind != len(sent) ) :
                 cur_output_sent.append(output_lang.syll2index['SPACE'])
 
-        input_sent.append(cur_input_sent)
-        output_sent.append(cur_output_sent)
-        pairs.append([cur_input_sent, cur_output_sent])
+        if ( len(cur_input_sent) <= Args.args.max_sent ) :
+            input_sent.append(cur_input_sent)
+            output_sent.append(cur_output_sent)
+            pairs.append([cur_input_sent, cur_output_sent])
 
     return input_sent, output_sent, pairs
 

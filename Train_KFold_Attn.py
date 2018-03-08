@@ -20,12 +20,12 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     # Encoder Part #
     enc_hidden = EncNet.initHidden() # initialized hidden Variable.
-    enc_outputs = Variable(torch.zeros(input_length, EncNet.hidden_size)) # zeros of input_length * EncNet
+    enc_outputs = Variable(torch.zeros(max_length, EncNet.hidden_size)) # zeros of input_length * EncNet
     enc_outputs = enc_outputs if Args.args.no_gpu else enc_outputs.cuda()
 
     for ei in range(input_length) :
-         enc_output, enc_hidden = EncNet(input_sent[ei], enc_hidden)
-         enc_outputs[ei] = enc_output[0][0]
+        enc_output, enc_hidden = EncNet(input_sent[ei], enc_hidden)
+        enc_outputs[ei] = enc_output[0][0]
 
     # Decoder Part #
     dec_hidden = enc_hidden # initialize decoder's hidden state as enc_hidden state
@@ -33,7 +33,7 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
     dec_input = dec_input if Args.args.no_gpu else dec_input.cuda()
 
     for di in range(target_length) :
-        dec_output, dec_hidden = DecNet(dec_input, dec_hidden)
+        dec_output, dec_hidden, dec_attention = DecNet(dec_input, dec_hidden, enc_outputs)
         topv, topi = dec_output.data.topk(1) # topk returns a tuple of (value, index)
         ni = topi[0][0] # next input
 

@@ -1,10 +1,11 @@
 import Arguments as Args
 import torch
 import os
-import Network
+import Network_Attention as Network
+import Train_KFold_Attn as T
+from sklearn.model_selection import KFold
 
 torch.manual_seed(1)
-
 
 #********************************#
 #******* Load DATA Part *********#
@@ -27,30 +28,31 @@ print("Done Loading!!!")
 #****************************#
 #******* Train Part *********#
 #****************************#
-import Train_KFold as T
 # import Evaluate as E
 
-from sklearn.model_selection import KFold
 trainSize = Args.args.train_size
 input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+if (trainSize > len(input_sent)) :
+    trainSize = len(input_sent)
 training_pairs = [D_pair.variableFromPair(pairs[i]) for i in range(trainSize)] # now returned as Variable of indexes
 kf = KFold(n_splits=Args.args.kfold)
 kf.get_n_splits(training_pairs)
 
 k=0
-for train_index, test_index in kf.split(training_pairs) :
-    k = k + 1
-    EncNet = Network.EncoderRNN(input_lang.n_sylls, Args.args.hidden_size)
-    DecNet = Network.DecoderRNN(output_lang.n_sylls, Args.args.hidden_size)
-    if Args.args.no_gpu == False:
-        EncNet.cuda()
-        DecNet.cuda()
+train_index = [i for i in range(trainSize)]
+# for train_index, test_index in kf.split(training_pairs) :
+#k = k + 1
+EncNet = Network.EncoderRNN(input_lang.n_sylls, Args.args.hidden_size)
+DecNet = Network.DecoderRNN(output_lang.n_sylls, Args.args.hidden_size)
+if Args.args.no_gpu == False:
+    EncNet.cuda()
+    DecNet.cuda()
 
-    print("\nTraining...")
-    for epoch in range(Args.args.epoch) :
-        print("[%d]-Fold, epoch : [%d]" % (k, epoch))
-        T.TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize=trainSize, epoch_size=Args.args.epoch, batch_size=Args.args.batch_size, lr=Args.args.learning_rate)
-    print("\nDone Training !")
+print("\nTraining...")
+for epoch in range(Args.args.epoch) :
+    print("[%d]-Fold, epoch : [%d]" % (k, epoch))
+    T.TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize=trainSize, epoch_size=Args.args.epoch, batch_size=Args.args.batch_size, lr=Args.args.learning_rate)
+print("\nDone Training !")
 
     #print("Evaluation at [%d]-Fold" % k)
     #E.Evaluate(EncNet, DecNet, test_index, output_lang, training_pairs)
