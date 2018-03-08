@@ -62,10 +62,10 @@ print("\nDone Training !")
 #******* Saving the Network *********#
 #************************************#
 print('Saving the Model...')
-torch.save(EncNet.state_dict(), './savedEnc')
-torch.save(EncNet, './saveEntireEnc')
-torch.save(DecNet.state_dict(), './savedDec')
-torch.save(DecNet, './saveEntireDec')
+torch.save(EncNet.state_dict(), './savedEnc_Att')
+torch.save(EncNet, './saveEntireEnc_Att')
+torch.save(DecNet.state_dict(), './savedDec_Att')
+torch.save(DecNet, './saveEntireDec_Att')
 
 
 # Print Result with arguments both into prompt and file

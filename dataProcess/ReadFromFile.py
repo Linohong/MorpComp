@@ -4,7 +4,6 @@ def getData(filename, input_lang, output_lang) :
     num_sent = 0
     corpus = []
     finished = open('../data/done.txt').read().strip()
-    print(finished)
 
     for file in filename :
         if (file in finished) :

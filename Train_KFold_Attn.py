@@ -58,6 +58,7 @@ def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_eve
     plot_loss_total = 0
     inter_loss = 0
 
+
     encoder_optimizer = optim.SGD(EncNet.parameters(), lr=lr)
     decoder_optimizer = optim.SGD(DecNet.parameters(), lr=lr)
     criterion = nn.NLLLoss()
@@ -75,8 +76,8 @@ def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_eve
 
         iter_time = iter_time + 1
 
-        if( iter % 4999 == 0 ) :
-            print("[%d] iteration : loss = %.4f" % (iter, inter_loss/5000))
+        if( iter % print_every-1 == 0 ) :
+            print("[%d] iteration : loss = %.4f" % (iter, inter_loss/print_every))
             inter_loss = 0
 
     print_loss_avg = print_loss_total/len(train_index)
