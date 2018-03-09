@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import Arguments as Args
+import torch.nn.functional as F
 
 class EncoderRNN(nn.Module) :
     def __init__ (self, vocab_size, hidden_size) :
@@ -35,7 +36,7 @@ class DecoderRNN(nn.Module) :
 
     def forward(self, input, hidden) :
         embedded = self.embedding(input).view(1, 1, -1)
-        output = embedded
+        output = F.relu(embedded)
         output, hidden = self.gru(output, hidden) # gru(input, h_0) : input=>(seq_len, batch, input_size)
         output = self.softmax(self.fc(output[0]))
         return output, hidden

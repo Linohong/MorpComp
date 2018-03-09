@@ -2,9 +2,8 @@ import Arguments as Args
 import torch
 import os
 import Network
-#import Network_Attention_Complete as Network
-import Train_KFold as T
-#import Train_KFold_Attn_Complete as T
+import Network_Attention_Complete as Network
+import Train_KFold_Attn_Complete as T
 from sklearn.model_selection import KFold
 
 torch.manual_seed(1)
@@ -57,7 +56,25 @@ print("\nDone Training !")
 #******* Saving the Network *********#
 #************************************#
 print('Saving the Model...')
-torch.save(EncNet.state_dict(), './savedEnc_Att')
-torch.save(EncNet, './saveEntireEnc_Att')
-torch.save(DecNet.state_dict(), './savedDec_Att')
-torch.save(DecNet, './saveEntireDec_Att')
+torch.save(EncNet.state_dict(), './savedEnc_Attn_Complete')
+torch.save(EncNet, './saveEntireEnc_Attn_Complete')
+torch.save(DecNet.state_dict(), './savedDec_Attn_Complete')
+torch.save(DecNet, './saveEntireDec_Attn_Complete')
+
+
+# import Evaluation as E
+# print("\nLoading Test Data...")
+# path = '../data/test'
+# filename = []
+# for file in os.listdir(path) :
+#     filename.append(file)
+#
+# input_lang = Lang.Lang('morp_decomposed')
+# output_lang = Lang.Lang('morp_composed')
+# corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+# print("Done Loading!!!")
+#
+# input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+# training_pairs = [D_pair.variableFromPair(pairs[i]) for i in range(trainSize)] # now returned as Variable of indexes
+# E.EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang)
+

@@ -20,12 +20,7 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     # Encoder Part #
     enc_hidden = EncNet.initHidden() # initialized hidden Variable.
-    enc_outputs = Variable(torch.zeros(input_length, EncNet.hidden_size)) # zeros of input_length * EncNet
-    enc_outputs = enc_outputs if Args.args.no_gpu else enc_outputs.cuda()
-
-    for ei in range(input_length) :
-         enc_output, enc_hidden = EncNet(input_sent[ei], enc_hidden)
-         enc_outputs[ei] = enc_output[0][0]
+    enc_output, enc_hidden = EncNet(input_sent, enc_hidden)
 
     # Decoder Part #
     dec_hidden = enc_hidden # initialize decoder's hidden state as enc_hidden state
@@ -45,7 +40,6 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
             break
 
     loss.backward()
-
     enc_optim.step()
     dec_optim.step()
 
@@ -53,9 +47,7 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
 def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=1000, epoch_size=10, batch_size=50, lr=0.02) :
     start = time.time()
-    plot_losses = []
     print_loss_total = 0
-    plot_loss_total = 0
     inter_loss = 0
 
     encoder_optimizer = optim.SGD(EncNet.parameters(), lr=lr)
@@ -70,13 +62,12 @@ def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_eve
 
         loss = Train(input_sent_variable, target_sent_variable, EncNet, DecNet, encoder_optimizer, decoder_optimizer, criterion)
         print_loss_total += loss
-        plot_loss_total += loss
         inter_loss += loss
 
         iter_time = iter_time + 1
 
-        if( iter % 4999 == 0 ) :
-            print("[%d] iteration : loss = %.4f" % (iter, inter_loss/5000))
+        if( iter % print_every-1 == 0 ) :
+            print("[%d] iteration : loss = %.4f" % (iter, inter_loss/print_every))
             inter_loss = 0
 
     print_loss_avg = print_loss_total/len(train_index)

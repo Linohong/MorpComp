@@ -58,6 +58,7 @@ def EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang) :
 
 
 
+
 #********************************#
 #******* Load DATA Part *********#
 #********************************#
@@ -81,6 +82,6 @@ training_pairs = [D_pair.variableFromPair(pairs[i]) for i in range(len(input_sen
 #*********************************#
 #******* Evaluation Part *********#
 #*********************************#
-EncNet = torch.load('./saveEntireEnc_seq2seq')
-DecNet = torch.load('./saveEntireDec_seq2seq')
+EncNet = torch.load('./saveEntireEnc')
+DecNet = torch.load('./saveEntireDec')
 EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang)
