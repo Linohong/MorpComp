@@ -11,6 +11,7 @@ def MakePair(corpus, input_lang, output_lang) :
     input_sent = []
     output_sent = []
     pairs = []
+    max_se = 0
 
     for ind, sent in enumerate(corpus) :
         cur_input_sent = []
@@ -34,6 +35,7 @@ def MakePair(corpus, input_lang, output_lang) :
             output_sent.append(cur_output_sent)
             pairs.append([cur_input_sent, cur_output_sent])
 
+    print("Actual Number of sentences read : %d" % len(input_sent))
     return input_sent, output_sent, pairs
 
 def variableFromSentence(sentence) :

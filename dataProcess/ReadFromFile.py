@@ -3,13 +3,14 @@ import Arguments as Args
 def getData(filename, input_lang, output_lang) :
     num_sent = 0
     corpus = []
-    finished = open('../data/done.txt').read().strip()
+    finished = open('../data/train/done.txt').read().strip()
 
     for file in filename :
+        cur_file_sent = 0
         if (file in finished) :
             continue
 
-        lines = open('../data/%s' % (file)).read().strip().split('\n')
+        lines = open('../data/train/%s' % (file)).read().strip().split('\n')
         cur_sent = []
         skip_flag = 0
 
@@ -24,6 +25,7 @@ def getData(filename, input_lang, output_lang) :
                 continue
             elif ('</p>' in line or '</head>' in line or '</l>' in line) :
                 corpus.append(cur_sent)
+                cur_file_sent += 1
                 continue
             elif ('<title>' in line ) :
                 continue
@@ -41,11 +43,11 @@ def getData(filename, input_lang, output_lang) :
             output_lang.addWord(cur_word[0])
 
             cur_sent.append(cur_word)
-            if ( i > Args.args.train_size ) :
-                break
+
+        print("Current File[%s] has %d sentences read" % (file, cur_file_sent))
 
 
-    print("The Number of Sentence : %d" % num_sent)
+    print("The Number of Sentence Exists in all of the files : %d" % num_sent)
     return corpus
 
 
