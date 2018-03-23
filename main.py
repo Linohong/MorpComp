@@ -1,13 +1,18 @@
 import Arguments as Args
 import torch
 import os
-import Network
-import Network_Attention_Complete as Network
-import Train_KFold_Attn_Complete as T
 from sklearn.model_selection import KFold
 
-torch.manual_seed(1)
+print("train with vanilla 50 epochs, many 30 sents examples, saved as vanilla4, 0.0005 lr")
 
+if (Args.args.model == 'vanilla') :
+    import Network
+    import Train_KFold as T
+elif (Args.args.model == 'attn') :
+    import Network_Attention_Complete as Network
+    import Train_KFold_Attn_Complete as T
+
+torch.manual_seed(1)
 #********************************#
 #******* Load DATA Part *********#
 #********************************#
@@ -56,11 +61,8 @@ print("\nDone Training !")
 #******* Saving the Network *********#
 #************************************#
 print('Saving the Model...')
-torch.save(EncNet.state_dict(), './savedEnc_Attn_Complete')
-torch.save(EncNet, './saveEntireEnc_Attn_Complete')
-torch.save(DecNet.state_dict(), './savedDec_Attn_Complete')
-torch.save(DecNet, './saveEntireDec_Attn_Complete')
-
+torch.save(EncNet, './saveEntireEnc' + Args.args.model_name)
+torch.save(DecNet, './saveEntireDec' + Args.args.model_name)
 
 # import Evaluation as E
 # print("\nLoading Test Data...")

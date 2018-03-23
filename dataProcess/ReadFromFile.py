@@ -10,7 +10,12 @@ def getData(filename, input_lang, output_lang) :
         if (file in finished) :
             continue
 
-        lines = open('../data/train/%s' % (file)).read().strip().split('\n')
+        if (Args.args.task == 'train') :
+            lines = open('../data/train/%s' % (file)).read().strip().split('\n')
+        elif (Args.args.task == 'closed_test') :
+            lines = open('../data/test/%s' % (file)).read().strip().split('\n')
+        else :
+            lines = open('../data/test_real/%s' % (file)).read().strip().split('\n')
         cur_sent = []
         skip_flag = 0
 
@@ -32,12 +37,16 @@ def getData(filename, input_lang, output_lang) :
 
             # cur_word = [이루어져, [(이루어지, VV), (어, EC)]]
             cur_word = line.split('\t')[1:]
-            if '+' in cur_word[0] :
+            if '+' in cur_word[0] or len(cur_word) != 2 :
                 skip_flag = 1
                 continue
             morp_word = cur_word[1].split('+')
             morp_word = [morp.strip() for morp in morp_word]
-            morp_word = [(morp.split('/')[0], morp.split('/')[1]) for morp in morp_word]
+            try :
+                morp_word = [(morp.split('/')[0], morp.split('/')[1]) for morp in morp_word]
+            except IndexError :
+                skip_flag = 1
+                continue
             cur_word = [cur_word[0], morp_word]
             input_lang.addWord(cur_word[1])
             output_lang.addWord(cur_word[0])

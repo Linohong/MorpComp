@@ -45,7 +45,7 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     return loss.data[0] / target_length
 
-def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=1000, epoch_size=10, batch_size=50, lr=0.02) :
+def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=8000, epoch_size=10, batch_size=50, lr=0.02) :
     start = time.time()
     print_loss_total = 0
     inter_loss = 0

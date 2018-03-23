@@ -20,7 +20,7 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     # Encoder Part #
     enc_hidden = EncNet.initHidden() # initialized hidden Variable.
-    enc_outputs = Variable(torch.zeros(max_length, EncNet.hidden_size * 2)) # zeros of input_length * EncNet
+    enc_outputs = Variable(torch.zeros(max_length+1, EncNet.hidden_size * 2)) # zeros of input_length+1 * EncNet (+1 for EOS tagging)
     enc_outputs = enc_outputs if Args.args.no_gpu else enc_outputs.cuda()
 
     enc_fw_output, enc_fw_hidden = EncNet(input_sent, enc_hidden, 'forward')
@@ -54,7 +54,7 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     return loss.data[0] / target_length
 
-def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=300, epoch_size=10, batch_size=50, lr=0.02) :
+def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=1000, epoch_size=10, batch_size=50, lr=0.02) :
     start = time.time()
     plot_losses = []
     print_loss_total = 0

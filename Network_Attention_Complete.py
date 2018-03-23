@@ -84,7 +84,7 @@ class DecoderRNN(nn.Module) :
         self.gru = nn.GRU(input_size=hidden_size, hidden_size=hidden_size)
         self.gru_2nd = nn.GRU(input_size=hidden_size, hidden_size=hidden_size)
         self.fc = nn.Linear(hidden_size*2, hidden_size)
-        self.attn = Attention(self.hidden_size, self.max_length) # attention class defined
+        self.attn = Attention(self.hidden_size, self.max_length+1) # attention class defined
         self.out = nn.Linear(hidden_size, vocab_size)
 
     def forward(self, input, hidden, enc_outputs, floor, hidden_2nd) :
