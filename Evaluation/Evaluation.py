@@ -4,6 +4,28 @@ from torch.autograd import Variable
 import time
 import dataProcess.Make_ExamplePair as D
 import Arguments as Args
+import pickle
+
+def Compare_Dec_Label(Dec, Lab) :
+    total = 0
+    got_right = 0
+
+    Lab_indexes = [i for i in range(len(Lab)) if 'SPACE' in Lab[i]]
+    Dec_indexes = [i for i in range(len(Dec)) if 'SPACE' in Dec[i]]
+    Lab_indexes = [0] + Lab_indexes
+    Dec_indexes = [0] + Dec_indexes
+
+    for i in range(len(Lab_indexes)-1) :
+        total += 1
+        try :
+            if Lab[Lab_indexes[i]:Lab_indexes[i+1]] == Dec[Dec_indexes[i]:Dec_indexes[i+1]] :
+                got_right += 1
+        except IndexError :
+            if Lab == Dec :
+                got_right += 1
+
+    return total, got_right
+
 
 def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
     got_right = 0
@@ -22,8 +44,6 @@ def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
     Enc_String = []
     for index in input_sent :
         Enc_String.append(input_lang.index2syll[int(index.data)])
-    print("Enc_String Below")
-    print(Enc_String)
 
     # Decoder Part #
     dec_hidden = enc_hidden # initialize decoder's hidden state as enc_hidden state
@@ -43,18 +63,27 @@ def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
         if ni == D.EOS_token :
             break
 
-    print("Dec_String Below")
-    print(Dec_String)
-    return got_right
+    Label_String = []
+    for index in target_sent:
+        Label_String.append(output_lang.index2syll[int(index.data)])
+
+
+    total, got_right = Compare_Dec_Label(Dec_String, Label_String)
+    return total, got_right
 
 def EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang) :
     start = time.time()
+    total = got_right = 0
+    t = g = 0
 
     for training_pair in training_pairs :
         input_sent_variable = training_pair[0] # Variable of indexes of input sentence
         target_sent_variable = training_pair[1] # Variable of indexes of target sentence
-        time.sleep(4)
-        Eval(input_sent_variable, target_sent_variable, EncNet, DecNet, input_lang, output_lang)
+        t, g = Eval(input_sent_variable, target_sent_variable, EncNet, DecNet, input_lang, output_lang)
+        total += t
+        got_right += g
+
+    return total, got_right
 
 
 #********************************#
@@ -63,18 +92,28 @@ def EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang) :
 print("\nLoading Test Data...")
 import dataProcess.ReadFromFile as D_read
 import dataProcess.Make_ExamplePair as D_pair
-import dataProcess.Lang as Lang
 
-if (Args.args.task == 'closed_test') :
+
+path = '../data/train'
+if (Args.args.task == 'train'):
+    path = '../data/train'
+elif (Args.args.task == 'closed_test'):
     path = '../data/test'
-else :
+elif (Args.args.task == 'test'):
     path = '../data/test_real'
+else:
+    path = '../data/experiment'
+
 filename = []
 for file in os.listdir(path) :
-    filename.append(file)
+    filename.append(path + '/' + file)
 
-input_lang = Lang.Lang('morp_decomposed')
-output_lang = Lang.Lang('morp_composed')
+# Load Vocabs
+with open('input_lang30sent+moreData.p', 'rb') as fp :
+    input_lang = pickle.load(fp)
+with open('output_lang30sent+moreData.p', 'rb') as fp :
+    output_lang = pickle.load(fp)
+
 corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
 print("Done Loading!!!")
 
@@ -85,9 +124,12 @@ training_pairs = [D_pair.variableFromPair(pairs[i]) for i in range(len(input_sen
 #******* Evaluation Part *********#
 #*********************************#
 if (Args.args.model == 'vanilla') :
-    EncNet = torch.load('./saveEntireEnc_vanilla1')
-    DecNet = torch.load('./saveEntireDec_vanilla1')
+    EncNet = torch.load('./Enc')
+    DecNet = torch.load('./Dec')
 else :
     EncNet = torch.load('./saveEntireEnc_Attn1')
     DecNet = torch.load('./saveEntireDec_Attn1')
-EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang)
+
+total, got_right = EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang)
+print("got right : %d  / total : %d" % (got_right, total))
+print("Accuracy : %.2f%%" % (100*got_right/total))

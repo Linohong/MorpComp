@@ -1,4 +1,24 @@
+# -*- coding: utf-8 -*-
+import os
 import Arguments as Args
+import hanja
+
+def getFilenames() :
+    path = '../data/train'
+    if (Args.args.task == 'train'):
+        path = '../data/train'
+    elif (Args.args.task == 'closed_test'):
+        path = '../data/closed_test'
+    elif (Args.args.task == 'test'):
+        path = '../data/test'
+    else:
+        path = '../data/experiment'
+
+    filenames = []
+    for file in os.listdir(path):
+        filenames.append(path + '/' + file)
+
+    return sorted(filenames)
 
 def getData(filename, input_lang, output_lang) :
     num_sent = 0
@@ -10,12 +30,8 @@ def getData(filename, input_lang, output_lang) :
         if (file in finished) :
             continue
 
-        if (Args.args.task == 'train') :
-            lines = open('../data/train/%s' % (file)).read().strip().split('\n')
-        elif (Args.args.task == 'closed_test') :
-            lines = open('../data/test/%s' % (file)).read().strip().split('\n')
-        else :
-            lines = open('../data/test_real/%s' % (file)).read().strip().split('\n')
+        lines = open(file).read().strip().split('\n')
+
         cur_sent = []
         skip_flag = 0
 
@@ -35,29 +51,52 @@ def getData(filename, input_lang, output_lang) :
             elif ('<title>' in line ) :
                 continue
 
-            # cur_word = [이루어져, [(이루어지, VV), (어, EC)]]
+            # Exception handling
             cur_word = line.split('\t')[1:]
-            if '+' in cur_word[0] or len(cur_word) != 2 :
+            if '+' in cur_word[0] or len(cur_word) != 2 : # Exception handling for wrong input
                 skip_flag = 1
                 continue
+
+            if skip_flag == 0 : # Exception handling for hanja
+                if ( hasJapChn(cur_word) ) :
+                    skip_flag = 1
+                    continue
+
             morp_word = cur_word[1].split('+')
-            morp_word = [morp.strip() for morp in morp_word]
+            morp_word = [morp.strip() for morp in morp_word] # morp_word = ['이루어지/VV', '어/EC']
             try :
                 morp_word = [(morp.split('/')[0], morp.split('/')[1]) for morp in morp_word]
             except IndexError :
                 skip_flag = 1
                 continue
-            cur_word = [cur_word[0], morp_word]
-            input_lang.addWord(cur_word[1])
-            output_lang.addWord(cur_word[0])
+            cur_word = [cur_word[0], morp_word] # cur_word = [이루어져, [(이루어지, VV), (어, EC)]]
+            if ( Args.args.task != 'test' and Args.args.task != 'closed_test' ) :
+                input_lang.addWord(cur_word[1], Args.args.enc_unit)
+                output_lang.addWord(cur_word[0], Args.args.dec_unit)
 
             cur_sent.append(cur_word)
-
-        print("Current File[%s] has %d sentences read" % (file, cur_file_sent))
-
+        print(file)
+        #print("Current File[%s] has %d sentences read" % (file, cur_file_sent))
 
     print("The Number of Sentence Exists in all of the files : %d" % num_sent)
     return corpus
+
+def hasJapChn(cur_word) :
+    # cur_word = [이루어져, [(이루어지, VV), (어, EC)]]
+    for char in cur_word[0] :
+        if (hanja.is_hanja(char)) :
+            return True
+
+    for input_list in cur_word[1] :
+        for char in input_list[0] :
+            if (hanja.is_hanja(char)) :
+                return True
+
+    return False
+
+
+
+
 
 
 

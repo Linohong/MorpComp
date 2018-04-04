@@ -1,13 +1,13 @@
-import torch
-from torch.autograd import Variable
-import torch.optim as optim
-import Network
-import torch.nn as nn
 import time
-import random
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+
+import Arguments as Args
 import dataProcess.Make_ExamplePair as D
 import etc.peripheralTools as PT
-import Arguments as Args
 
 
 def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criterion, max_length=Args.args.max_sent) :
@@ -45,13 +45,15 @@ def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criteri
 
     return loss.data[0] / target_length
 
-def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=8000, epoch_size=10, batch_size=50, lr=0.02) :
+def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_every=8000, epoch_size=10, batch_size=50, lr=0.0001) :
     start = time.time()
     print_loss_total = 0
     inter_loss = 0
 
     encoder_optimizer = optim.SGD(EncNet.parameters(), lr=lr)
     decoder_optimizer = optim.SGD(DecNet.parameters(), lr=lr)
+    # encoder_optimizer = optim.Adam(EncNet.parameters(), lr=lr)
+    # decoder_optimizer = optim.Adam(DecNet.parameters(), lr=lr)
     criterion = nn.NLLLoss()
 
     iter_time = 1
@@ -73,4 +75,15 @@ def TrainIters(train_index, training_pairs, EncNet, DecNet, trainSize, print_eve
     print_loss_avg = print_loss_total/len(train_index)
     print('%s (%d itered) %.4f' % (PT.timeSince(start, float(iter_time)/trainSize), iter_time, print_loss_avg ))
 
+    return print_loss_avg
 
+def EarlyStopping(prev_loss, loss, early) :
+    if loss > prev_loss:
+        early -= 1
+    else:
+        early = Args.args.early
+
+    if early == 0 :
+        return True
+    else :
+        return False

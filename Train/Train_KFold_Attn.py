@@ -1,13 +1,13 @@
-import torch
-from torch.autograd import Variable
-import torch.optim as optim
-import Network
-import torch.nn as nn
 import time
-import random
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+
+import Arguments as Args
 import dataProcess.Make_ExamplePair as D
 import etc.peripheralTools as PT
-import Arguments as Args
 
 
 def Train(input_sent, target_sent, EncNet, DecNet, enc_optim, dec_optim, criterion, max_length=Args.args.max_sent) :

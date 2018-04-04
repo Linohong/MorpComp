@@ -10,6 +10,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="6aefe0c6-97de-4e8c-b898-c6b371eb7c0f" name="nlpgpu3" url="http://163.239.199.228">
+        <fileTransfer host="163.239.199.228" port="22" rootFolder="/home/nlpgpu3/LinoHong" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
