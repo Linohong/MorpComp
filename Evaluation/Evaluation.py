@@ -29,59 +29,60 @@ def Compare_Dec_Label(Dec, Lab) :
 
 def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
     got_right = 0
-    input_length = input_sent.size()[0]
-    target_length = target_sent.size()[0]
 
     # Encoder Part #
-    enc_hidden = EncNet.initHidden() # initialized hidden Variable.
-    enc_outputs = Variable(torch.zeros(input_length, EncNet.hidden_size)) # zeros of input_length * EncNet
-    enc_outputs = enc_outputs if Args.args.no_gpu else enc_outputs.cuda()
-
-    for ei in range(input_length) :
-         enc_output, enc_hidden = EncNet(input_sent[ei], enc_hidden)
-         enc_outputs[ei] = enc_output[0][0]
+    # Encoder Part #
+    enc_hidden = EncNet.initHidden(1) # initialized hidden Variable.
+    enc_output, enc_hidden = EncNet(input_sent, enc_hidden)
 
     Enc_String = []
     for index in input_sent :
         Enc_String.append(input_lang.index2syll[int(index.data)])
 
     # Decoder Part #
-    dec_hidden = enc_hidden # initialize decoder's hidden state as enc_hidden state
-    dec_input = Variable(torch.LongTensor([[D.SOS_token]])) # start of the input with SOS_token
+    dec_hidden = enc_hidden  # initialize decoder's hidden state as enc_hidden state => 1 * 32 * 256 (1 * B * H)
+    dec_input = Variable(torch.LongTensor([D.SOS_token] * 1)).view(1,-1)  # start of the input with SOS_token
     dec_input = dec_input if Args.args.no_gpu else dec_input.cuda()
 
     Dec_String = []
-    for di in range(target_length) :
+    for di in range(Args.args.max_sent):
         dec_output, dec_hidden = DecNet(dec_input, dec_hidden)
-        topv, topi = dec_output.data.topk(1) # topk returns a tuple of (value, index)
+        topv, topi = dec_output.data.topk(1)  # topk returns a tuple of (value, index)
+
         ni = topi[0][0] # next input
         Dec_String.append(output_lang.index2syll[ni])
-
-        dec_input = Variable(torch.LongTensor([[ni]]))
+        dec_input = Variable(torch.cat(topi))
         dec_input = dec_input if Args.args.no_gpu else dec_input.cuda()
 
         if ni == D.EOS_token :
             break
 
+
     Label_String = []
     for index in target_sent:
         Label_String.append(output_lang.index2syll[int(index.data)])
+
+    print('Enc_String')
+    print(Enc_String)
+    print('Dec_String')
+    print(Dec_String)
 
 
     total, got_right = Compare_Dec_Label(Dec_String, Label_String)
     return total, got_right
 
-def EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang) :
+def EvalIters(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
     start = time.time()
     total = got_right = 0
     t = g = 0
 
-    for training_pair in training_pairs :
-        input_sent_variable = training_pair[0] # Variable of indexes of input sentence
-        target_sent_variable = training_pair[1] # Variable of indexes of target sentence
-        t, g = Eval(input_sent_variable, target_sent_variable, EncNet, DecNet, input_lang, output_lang)
+    for i in range(len(input_sent)) :
+        in_sent = Variable(input_sent[i].cuda())
+        tar_sent = Variable(target_sent[i].cuda())
+        t, g = Eval(in_sent, tar_sent, EncNet, DecNet, input_lang, output_lang)
         total += t
         got_right += g
+        time.sleep(5)
 
     return total, got_right
 
@@ -109,27 +110,30 @@ for file in os.listdir(path) :
     filename.append(path + '/' + file)
 
 # Load Vocabs
-with open('input_lang30sent+moreData.p', 'rb') as fp :
+with open(Args.args.model_name + 'input_lang.p', 'rb') as fp :
     input_lang = pickle.load(fp)
-with open('output_lang30sent+moreData.p', 'rb') as fp :
+with open(Args.args.model_name + 'output_lang.p', 'rb') as fp :
     output_lang = pickle.load(fp)
 
 corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
 print("Done Loading!!!")
 
 input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
-training_pairs = [D_pair.variableFromPair(pairs[i]) for i in range(len(input_sent))] # now returned as Variable of indexes
+batch_size = Args.args.batch_size
+input_sent = torch.LongTensor(input_sent)
+output_sent = torch.LongTensor(output_sent)
+
 
 #*********************************#
 #******* Evaluation Part *********#
 #*********************************#
 if (Args.args.model == 'vanilla') :
-    EncNet = torch.load('./Enc')
-    DecNet = torch.load('./Dec')
+    EncNet = torch.load('./Enc' + Args.args.model_name)
+    DecNet = torch.load('./Dec' + Args.args.model_name)
 else :
     EncNet = torch.load('./saveEntireEnc_Attn1')
     DecNet = torch.load('./saveEntireDec_Attn1')
 
-total, got_right = EvalIters(training_pairs, EncNet, DecNet, input_lang, output_lang)
+total, got_right = EvalIters(input_sent, output_sent, EncNet, DecNet, input_lang, output_lang)
 print("got right : %d  / total : %d" % (got_right, total))
 print("Accuracy : %.2f%%" % (100*got_right/total))

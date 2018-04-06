@@ -2,9 +2,24 @@ import torch
 from torch.autograd import Variable
 import Arguments as Args
 
-SOS_token = 0
-EOS_token = 1
-SPACE_token = 2
+SOS_token = 1
+EOS_token = 2
+SPACE_token = 3
+ZERO_token = 0
+
+def ZeroPadding(cur_sent, side) :
+    max_sent = Args.args.max_sent # ex) 30 , have to fill all
+    count = max_sent - len(cur_sent)
+    pad = []
+    for i in range(count) :
+        pad.append(ZERO_token)
+
+    if ( side == 'front' ) :
+        cur_sent = pad + cur_sent
+    else :
+        cur_sent = cur_sent + pad
+    return cur_sent
+
 
 # make korean sentence into list of indexes of syllables
 def tryAddVocab(cur_sent, lang, input, unit) :
@@ -47,7 +62,12 @@ def MakePair(corpus, input_lang, output_lang) :
                 cur_output_sent.append(output_lang.syll2index['SPACE'])
 
         # If current sentence is longer than the max_sent length, skip it !
-        if ( len(cur_input_sent) <= Args.args.max_sent ) :
+        if ( len(cur_input_sent) < Args.args.max_sent and len(cur_output_sent) < Args.args.max_sent ) :
+            cur_input_sent.append(EOS_token)
+            cur_output_sent.append(EOS_token)
+            cur_input_sent = ZeroPadding(cur_input_sent, 'front')
+            cur_output_sent = ZeroPadding(cur_output_sent, 'back')
+
             input_sent.append(cur_input_sent)
             output_sent.append(cur_output_sent)
             pairs.append([cur_input_sent, cur_output_sent])
@@ -66,4 +86,18 @@ def variableFromSentence(sentence) :
 def variableFromPair(pair) :
     input_variable = variableFromSentence(pair[0])
     target_variable = variableFromSentence(pair[1])
+    return (input_variable, target_variable)
+
+def TensorFromSentence(sentence) :
+    #sentence.append(EOS_token)
+    result = torch.LongTensor(sentence).view(-1, 1)
+    return result
+    if ( Args.args.no_gpu ) :
+        return result
+    else :
+        return result.cuda()
+
+def TensorFromPair(pair) :
+    input_variable = TensorFromSentence(pair[0])
+    target_variable = TensorFromSentence(pair[1])
     return (input_variable, target_variable)

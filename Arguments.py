@@ -5,7 +5,8 @@ parser = argparse.ArgumentParser(description='Seq2Seq NMT')
 # option
 parser.add_argument('-no_gpu', type=bool, default=False, help='disable the gpu')
 # model
-parser.add_argument('-hidden_size', type=int, default=300)
+parser.add_argument('-hidden_size', type=int, default=256)
+parser.add_argument('-embed_size', type=int, default=128)
 parser.add_argument('-max_sent', type=int, default=10, help='max sentence length')
 parser.add_argument('-dropout', type=float, default=0.5)
 parser.add_argument('-embed_dim', type=int, default=300)
