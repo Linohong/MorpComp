@@ -4,6 +4,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import Arguments as Args
 import torch.nn.functional as F
+import numpy as np
 
 class EncoderRNN(nn.Module) :
     def __init__ (self, vocab_size, embed_size, hidden_size) :
@@ -27,7 +28,6 @@ class EncoderRNN(nn.Module) :
             return result.cuda()
         else :
             return result
-
 
 class DecoderRNN(nn.Module) :
     def __init__ (self, vocab_size, embed_size, hidden_size) :

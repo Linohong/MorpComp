@@ -9,8 +9,6 @@ import dataProcess.Lang as Lang
 import Arguments as Args
 
 torch.manual_seed(1)
-print("train with vanilla 50 epochs, many 25 sents examples, saved as morpTest, 0.003 lr, 3 early stopping, SGD Optimizer")
-print("testing Enc : morp unit, Dec : Syll unit")
 
 if (Args.args.model == 'vanilla') :
     from Model import Network as Network
@@ -48,9 +46,9 @@ train_data = torch.utils.data.TensorDataset(x_train, y_train)
 trainloader = data.DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=32)
 
 
-with open(Args.args.model_name + 'input_lang.p', 'wb') as fp : # Write Vocabulary
+with open('ModelWeights/vocab/' + Args.args.model_name + '_in.p', 'wb') as fp : # Write Vocabulary
      pickle.dump(input_lang, fp, protocol=pickle.HIGHEST_PROTOCOL)
-with open(Args.args.model_name + 'output_lang.p', 'wb') as fp :
+with open('ModelWeights/vocab/' + Args.args.model_name + '_out.p', 'wb') as fp :
      pickle.dump(output_lang, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -62,7 +60,8 @@ DecNet = Network.DecoderRNN(output_lang.n_sylls, Args.args.embed_size, Args.args
 if Args.args.no_gpu == False:
     EncNet.cuda()
     DecNet.cuda()
-
+T.ZeroWeight(EncNet, Args.args.embed_size)
+T.ZeroWeight(DecNet, Args.args.embed_size)
 
 #************************************#
 #******* Train Starts ***************#
@@ -72,7 +71,7 @@ prev_loss = 1000 # random big number
 early = Args.args.early
 for epoch in range(Args.args.epoch) :
     print("epoch : [%d]" % (epoch))
-    loss = T.TrainIters(trainloader, EncNet, DecNet, trainSize=trainSize, epoch_size=Args.args.epoch, batch_size=Args.args.batch_size, lr=Args.args.learning_rate)
+    loss = T.TrainIters(trainloader, EncNet, DecNet, trainSize=trainSize, out_lang=output_lang, epoch_size=Args.args.epoch, batch_size=Args.args.batch_size, lr=Args.args.learning_rate)
 
     # Early Stopping Part
     if ( Args.args.early != None ) :
@@ -86,6 +85,6 @@ print("\nDone Training !")
 #******* Saving the Network *********#
 #************************************#
 print('Saving the Model...')
-torch.save(EncNet, './Enc' + Args.args.model_name)
-torch.save(DecNet, './Dec' + Args.args.model_name)
+torch.save(EncNet, 'ModelWeights/vanilla/Enc_' + Args.args.model_name)
+torch.save(DecNet, 'ModelWeights/vanilla/Dec_' + Args.args.model_name)
 

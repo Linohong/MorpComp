@@ -31,8 +31,8 @@ def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
     got_right = 0
 
     # Encoder Part #
-    # Encoder Part #
     enc_hidden = EncNet.initHidden(1) # initialized hidden Variable.
+    input_sent = input_sent.view(1, -1).transpose(0, 1)
     enc_output, enc_hidden = EncNet(input_sent, enc_hidden)
 
     Enc_String = []
@@ -51,7 +51,7 @@ def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
 
         ni = topi[0][0] # next input
         Dec_String.append(output_lang.index2syll[ni])
-        dec_input = Variable(torch.cat(topi))
+        dec_input = Variable(torch.cat(topi)).view(1,-1)
         dec_input = dec_input if Args.args.no_gpu else dec_input.cuda()
 
         if ni == D.EOS_token :
@@ -82,7 +82,7 @@ def EvalIters(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) 
         t, g = Eval(in_sent, tar_sent, EncNet, DecNet, input_lang, output_lang)
         total += t
         got_right += g
-        time.sleep(5)
+        #time.sleep(5)
 
     return total, got_right
 
@@ -110,9 +110,9 @@ for file in os.listdir(path) :
     filename.append(path + '/' + file)
 
 # Load Vocabs
-with open(Args.args.model_name + 'input_lang.p', 'rb') as fp :
+with open('ModelWeights/vocab/' + Args.args.model_name + '_in.p', 'rb') as fp :
     input_lang = pickle.load(fp)
-with open(Args.args.model_name + 'output_lang.p', 'rb') as fp :
+with open('ModelWeights/vocab/' + Args.args.model_name + '_out.p', 'rb') as fp :
     output_lang = pickle.load(fp)
 
 corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
@@ -128,8 +128,8 @@ output_sent = torch.LongTensor(output_sent)
 #******* Evaluation Part *********#
 #*********************************#
 if (Args.args.model == 'vanilla') :
-    EncNet = torch.load('./Enc' + Args.args.model_name)
-    DecNet = torch.load('./Dec' + Args.args.model_name)
+    EncNet = torch.load('ModelWeights/vanilla/Enc_' + Args.args.model_name)
+    DecNet = torch.load('ModelWeights/vanilla/Dec_' + Args.args.model_name)
 else :
     EncNet = torch.load('./saveEntireEnc_Attn1')
     DecNet = torch.load('./saveEntireDec_Attn1')

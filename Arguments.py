@@ -20,6 +20,7 @@ parser.add_argument('-batch_size', type=int, default=1, help='batch size for tra
 parser.add_argument('-learning_rate', type=float, default=0.02, help='learning rate')
 parser.add_argument('-kfold', type=int, default=10, help='k-folding size')
 parser.add_argument('-early', type=int, default=None)
+parser.add_argument('-optim', type=str, default='SGD')
 # Data
 parser.add_argument('-train_size', type=int, default=3000, help='train size')
 parser.add_argument('-task', type=str, default='train')

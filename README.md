@@ -46,3 +46,8 @@ weights are saved as saveEntireEnc, saveEntireDec
     - 50 epochs, learning rate=0.05
         => diverges
     - 100 epochs, learning rate=0.001
+
+
+04/06 experiment]
+    - Crucial mistake on embedding view before forwarding into the GRU network.
+    - batch *
