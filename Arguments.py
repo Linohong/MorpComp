@@ -21,6 +21,7 @@ parser.add_argument('-learning_rate', type=float, default=0.02, help='learning r
 parser.add_argument('-kfold', type=int, default=10, help='k-folding size')
 parser.add_argument('-early', type=int, default=None)
 parser.add_argument('-optim', type=str, default='SGD')
+parser.add_argument('-exam_unit', type=str, default='word')
 # Data
 parser.add_argument('-train_size', type=int, default=3000, help='train size')
 parser.add_argument('-task', type=str, default='train')

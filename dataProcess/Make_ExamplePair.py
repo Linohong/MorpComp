@@ -75,6 +75,44 @@ def MakePair(corpus, input_lang, output_lang) :
     print("Actual Number of sentences read : %d" % len(input_sent))
     return input_sent, output_sent, pairs
 
+def MakePairWordUnit(corpus, input_lang, output_lang) :
+    input_sent = []
+    output_sent = []
+    pairs = []
+
+    for ind, word in enumerate(corpus) :
+        pass_this_word = False
+        cur_input_word = []
+        cur_output_word = []
+        # Example of word = ['한국의', [('한국', 'NNP'), ('의', 'JKG')]]
+
+        input_word = word[1]
+        output_word = word[0]
+
+        # ADD INPUT INDEXES
+        for morp_tuple in input_word : # ('한국', 'NNP'), ('의', 'JKG')
+            pass_this_word = tryAddVocab(cur_input_word, input_lang, morp_tuple[0], Args.args.enc_unit)
+            pass_this_word = tryAddVocab(cur_input_word, input_lang, morp_tuple[1], 'morp') # put POS as a whole
+
+        # ADD OUTPUT INDEXES
+        pass_this_word = tryAddVocab(cur_output_word, output_lang, output_word, Args.args.dec_unit)
+        if pass_this_word == True :
+            break
+
+        # If current sentence is longer than the max_sent length, skip it !
+        if ( len(cur_input_word) < Args.args.max_sent and len(cur_output_word) < Args.args.max_sent ) :
+            cur_input_word.append(EOS_token)
+            cur_output_word.append(EOS_token)
+            cur_input_word = ZeroPadding(cur_input_word, 'front')
+            cur_output_word = ZeroPadding(cur_output_word, 'back')
+
+            input_sent.append(cur_input_word)
+            output_sent.append(cur_output_word)
+            pairs.append([cur_input_word, cur_output_word])
+
+    print("Actual Number of words read : %d" % len(input_sent))
+    return input_sent, output_sent, pairs
+
 def variableFromSentence(sentence) :
     sentence.append(EOS_token)
     result = Variable(torch.LongTensor(sentence).view(-1, 1))

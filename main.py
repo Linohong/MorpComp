@@ -18,24 +18,39 @@ elif (Args.args.model == 'attn') :
     from Train import Train_KFold_Attn_Complete as T
 
 
+
+
 #********************************#
 #******* Load DATA Part *********#
 #********************************#
+
 print("\nLoading Train Data...")
 filename = D_read.getFilenames()
 input_lang = Lang.Lang('morp_decomposed')
 output_lang = Lang.Lang('morp_composed')
-corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+if ( Args.args.exam_unit == 'sent' ) :
+    corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+elif ( Args.args.exam_unit == 'word') :
+    corpus, max_word_length = D_read.getDataWordUnit(filename, input_lang, output_lang)
+#Args.args.max_sent = max_word_length
+print("max word length : %d" % max_word_length)
 print("Input vocab : %d" % input_lang.n_sylls)
 print("Output vocab : %d" % output_lang.n_sylls)
 print("Done Loading!!!")
 
 
+
+
+
 #************************************#
 #******* Prepare Train DATA *********#
 #************************************#
+
 trainSize = Args.args.train_size
-input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+if (Args.args.exam_unit == 'sent') :
+    input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+elif ( Args.args.exam_unit == 'word') :
+    input_sent, output_sent, pairs = D_pair.MakePairWordUnit(corpus, input_lang, output_lang)
 trainSize = len(input_sent) if trainSize > len(input_sent) else trainSize
 
 # Mini_Batch
@@ -52,9 +67,13 @@ with open('ModelWeights/vocab/' + Args.args.model_name + '_out.p', 'wb') as fp :
      pickle.dump(output_lang, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+
+
+
 #************************************#
 #******* LOAD Network ***************#
 #************************************#
+
 EncNet = Network.EncoderRNN(input_lang.n_sylls, Args.args.embed_size, Args.args.hidden_size)
 DecNet = Network.DecoderRNN(output_lang.n_sylls, Args.args.embed_size, Args.args.hidden_size)
 if Args.args.no_gpu == False:
@@ -63,9 +82,13 @@ if Args.args.no_gpu == False:
 T.ZeroWeight(EncNet, Args.args.embed_size)
 T.ZeroWeight(DecNet, Args.args.embed_size)
 
+
+
+
 #************************************#
 #******* Train Starts ***************#
 #************************************#
+
 print("\nTraining...")
 prev_loss = 1000 # random big number
 early = Args.args.early
@@ -79,6 +102,9 @@ for epoch in range(Args.args.epoch) :
             print('Early stopped at [%d] Epoch - [%.2f] loss' % epoch, loss)
             break
 print("\nDone Training !")
+
+
+
 
 
 #************************************#

@@ -115,10 +115,17 @@ with open('ModelWeights/vocab/' + Args.args.model_name + '_in.p', 'rb') as fp :
 with open('ModelWeights/vocab/' + Args.args.model_name + '_out.p', 'rb') as fp :
     output_lang = pickle.load(fp)
 
-corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+if ( Args.args.exam_unit == 'sent' ) :
+    corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+elif ( Args.args.exam_unit == 'word') :
+    corpus, max_word_length = D_read.getDataWordUnit(filename, input_lang, output_lang)
+Args.args.max_sent = max_word_length
 print("Done Loading!!!")
 
-input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+if (Args.args.exam_unit == 'sent') :
+    input_sent, output_sent, pairs = D_pair.MakePair(corpus, input_lang, output_lang)
+elif ( Args.args.exam_unit == 'word') :
+    input_sent, output_sent, pairs = D_pair.MakePairWordUnit(corpus, input_lang, output_lang)
 batch_size = Args.args.batch_size
 input_sent = torch.LongTensor(input_sent)
 output_sent = torch.LongTensor(output_sent)

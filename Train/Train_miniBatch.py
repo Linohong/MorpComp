@@ -9,7 +9,8 @@ import Arguments as Args
 import dataProcess.Make_ExamplePair as D
 import etc.peripheralTools as PT
 
-def Train(batch_sents, batch_labels, EncNet, DecNet, enc_optim, dec_optim, criterion, out_lang, max_sent=Args.args.max_sent) :
+def Train(batch_sents, batch_labels, EncNet, DecNet, enc_optim, dec_optim, criterion, out_lang) :
+    max_sent = Args.args.max_sent
     enc_optim.zero_grad()
     dec_optim.zero_grad()
     cur_batch_size = len(batch_sents)
@@ -56,7 +57,7 @@ def Train(batch_sents, batch_labels, EncNet, DecNet, enc_optim, dec_optim, crite
 
     return loss.data[0] / max_sent
 
-def TrainIters(trainloader, EncNet, DecNet, trainSize, out_lang, print_every=2048, epoch_size=10, batch_size=32, lr=0.0001) :
+def TrainIters(trainloader, EncNet, DecNet, trainSize, out_lang, print_every=1000, epoch_size=10, batch_size=32, lr=0.0001) :
     start = time.time()
     print_loss_total = 0
     inter_loss = 0
@@ -85,8 +86,8 @@ def TrainIters(trainloader, EncNet, DecNet, trainSize, out_lang, print_every=204
         print_loss_total += loss * cur_batch_size
         inter_loss += loss * cur_batch_size
 
-        if ( (num_items * batch_size) % (print_every-1) == 0 ) :
-            print("[%d] batches, [%d] items passed : latest [%d] average loss = %.4f" % (iter, num_items, print_every, inter_loss/print_every))
+        if ( num_items % (print_every-1) == 0 ) :
+            print("[%d] items passed : latest [%d] average loss = %.4f" % (num_items, print_every, inter_loss/print_every))
             inter_loss = 0
 
     print_loss_avg = print_loss_total/num_items
