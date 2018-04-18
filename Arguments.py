@@ -25,4 +25,5 @@ parser.add_argument('-exam_unit', type=str, default='word')
 # Data
 parser.add_argument('-train_size', type=int, default=3000, help='train size')
 parser.add_argument('-task', type=str, default='train')
+parser.add_argument('-files_to_read', type=int, default=10, help='the number of files to read for test data')
 args = parser.parse_args()

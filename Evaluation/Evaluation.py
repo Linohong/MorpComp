@@ -1,4 +1,5 @@
 import os
+import random
 import torch
 from torch.autograd import Variable
 import time
@@ -24,6 +25,14 @@ def Compare_Dec_Label(Dec, Lab) :
             if Lab == Dec :
                 got_right += 1
 
+    if Args.args.exam_unit == 'word' :
+        total += 1
+        # Dec : ['을', '해', 'EOS']
+        # Lab : ['을', '해', 'EOS', 'ZERO', 'ZERO', ... , 'ZERO']
+        if Lab[:Lab.index('EOS')+1] == Dec :
+            got_right += 1
+
+
     return total, got_right
 
 
@@ -32,7 +41,7 @@ def Eval(input_sent, target_sent, EncNet, DecNet, input_lang, output_lang) :
 
     # Encoder Part #
     enc_hidden = EncNet.initHidden(1) # initialized hidden Variable.
-    input_sent = input_sent.view(1, -1).transpose(0, 1)
+    input_sent = input_sent
     enc_output, enc_hidden = EncNet(input_sent, enc_hidden)
 
     Enc_String = []
@@ -95,19 +104,24 @@ import dataProcess.ReadFromFile as D_read
 import dataProcess.Make_ExamplePair as D_pair
 
 
+# Reading Data from proper place according to the task
 path = '../data/train'
-if (Args.args.task == 'train'):
-    path = '../data/train'
-elif (Args.args.task == 'closed_test'):
-    path = '../data/test'
-elif (Args.args.task == 'test'):
-    path = '../data/test_real'
-else:
-    path = '../data/experiment'
-
-filename = []
+trained = open('../data/test/' + Args.args.model_name + '_trained.txt').read().strip()
+allfiles = []
 for file in os.listdir(path) :
-    filename.append(path + '/' + file)
+    allfiles.append(path + '/' + file)
+allfiles = random.sample(allfiles, len(allfiles)) # shuffle
+filenames = [] # filenames of files which will actually be read
+count = 0
+for filename in allfiles :
+    if Args.args.task == 'test' and filename not in trained :
+        filenames.append(filename)
+        count += 1
+    elif Args.args.task == 'closed_test' and filename in trained :
+        filenames.append(filename)
+        count += 1
+    if count == Args.args.files_to_read :
+        break
 
 # Load Vocabs
 with open('ModelWeights/vocab/' + Args.args.model_name + '_in.p', 'rb') as fp :
@@ -116,10 +130,11 @@ with open('ModelWeights/vocab/' + Args.args.model_name + '_out.p', 'rb') as fp :
     output_lang = pickle.load(fp)
 
 if ( Args.args.exam_unit == 'sent' ) :
-    corpus = D_read.getData(filename, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
+    corpus = D_read.getData(filenames, input_lang, output_lang) # to this point, we only read data but make a sentence of indexes nor wrap them with Variable
 elif ( Args.args.exam_unit == 'word') :
-    corpus, max_word_length = D_read.getDataWordUnit(filename, input_lang, output_lang)
-Args.args.max_sent = max_word_length
+    corpus, max_word_length = D_read.getDataWordUnit(filenames, input_lang, output_lang)
+#Args.args.max_sent = max_word_length
+Args.args.max_sent = Args.args.max_sent
 print("Done Loading!!!")
 
 if (Args.args.exam_unit == 'sent') :
@@ -144,3 +159,7 @@ else :
 total, got_right = EvalIters(input_sent, output_sent, EncNet, DecNet, input_lang, output_lang)
 print("got right : %d  / total : %d" % (got_right, total))
 print("Accuracy : %.2f%%" % (100*got_right/total))
+
+print('test sets are listed below')
+for filename in filenames :
+    print(filename)

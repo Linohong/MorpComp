@@ -86,7 +86,8 @@ def TrainIters(trainloader, EncNet, DecNet, trainSize, out_lang, print_every=100
         print_loss_total += loss * cur_batch_size
         inter_loss += loss * cur_batch_size
 
-        if ( num_items % (print_every-1) == 0 ) :
+        if False :
+        #if ( num_items % (print_every-1) == 0 ) :
             print("[%d] items passed : latest [%d] average loss = %.4f" % (num_items, print_every, inter_loss/print_every))
             inter_loss = 0
 
