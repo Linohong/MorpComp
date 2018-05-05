@@ -14,11 +14,25 @@ def getFilenames() :
     else:
         path = '../data/experiment'
 
+
+    if ( Args.args.task == 'train' ) :
+        filenames = open(path + '/trainthese.txt').read().strip().split('\n')
+        return sorted(filenames)
+
     filenames = []
     for file in os.listdir(path):
         filenames.append(path + '/' + file)
-
     return sorted(filenames)
+
+
+def corpusSent2Word(read_corpus) :
+    word_corpus = []
+    for sent in read_corpus :
+        for word in sent :
+            word_corpus.append(word)
+
+    return word_corpus
+
 
 def getDataWordUnit(filename, input_lang, output_lang) :
     max_word_length = 0
@@ -47,6 +61,8 @@ def getDataWordUnit(filename, input_lang, output_lang) :
             # split if right type of word
             cur_word_length = 0
             cur_word = line.split('\t')[1:]
+            if cur_word == [] : # if empty line
+                continue
             if '+' in cur_word[0] or len(cur_word) != 2:  # Exception handling for wrong input
                 continue
 
@@ -111,7 +127,10 @@ def getData(filename, input_lang, output_lang) :
                 continue
 
             # Exception handling
-            cur_word = line.split('\t')[1:]
+            cur_word = line.split('\t')[1:] # normal cur_word = ['꿈속의', '꿈속/NNG + 의/JKG']
+            if cur_word == [] : # if empty line
+                skip_flag = 1
+                continue
             if '+' in cur_word[0] or len(cur_word) != 2 : # Exception handling for wrong input
                 skip_flag = 1
                 continue

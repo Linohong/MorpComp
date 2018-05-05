@@ -12,3 +12,6 @@ def timeSince(since, percent) :
     es = s / (percent)
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
+
+def printTime(start_time) :
+    print("%.0f minutes passed" % ((float(time.time()) - float(start_time))/60) )

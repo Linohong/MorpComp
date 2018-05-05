@@ -7,6 +7,32 @@ EOS_token = 2
 SPACE_token = 3
 ZERO_token = 0
 
+def makeStandardDataSet(input_sent, output_sent, input, out, unit, test_input_sent=None, test_output_sent=None) :
+    from random import shuffle
+    import pickle
+    k = len(input_sent)
+    testSize = int(k/10)
+
+    if (unit == 'sent') :
+        test_input_sent = input_sent[k-testSize:]
+        test_output_sent = output_sent[k-testSize:]
+        input_sent = input_sent[:k-testSize]
+        output_sent = output_sent[:k-testSize]
+
+    with open("../data/train/"+input+'.txt', "wb") as fp:
+        pickle.dump(input_sent, fp)
+    with open("../data/train/"+out+'.txt', "wb") as fp:
+        pickle.dump(output_sent, fp)
+    with open("../data/test/test_"+input+'.txt', "wb") as fp:
+        pickle.dump(test_input_sent, fp)
+    with open("../data/test/test_"+out+'.txt', "wb") as fp:
+        pickle.dump(test_output_sent, fp)
+
+
+
+
+
+
 def ZeroPadding(cur_sent, side) :
     max_sent = Args.args.max_sent # ex) 30 , have to fill all
     count = max_sent - len(cur_sent)
@@ -92,6 +118,7 @@ def MakePair(corpus, input_lang, output_lang) :
     input_sent = []
     output_sent = []
     pairs = []
+    read_corpus = []
 
     for sent in corpus :
         pass_this_sent = False
@@ -123,9 +150,10 @@ def MakePair(corpus, input_lang, output_lang) :
             input_sent.append(cur_input_sent)
             output_sent.append(cur_output_sent)
             pairs.append([cur_input_sent, cur_output_sent])
+            read_corpus.append(sent)
 
     print("Actual Number of sentences read : %d" % len(input_sent))
-    return input_sent, output_sent, pairs
+    return input_sent, output_sent, read_corpus
 
 def MakePairWordUnit(corpus, input_lang, output_lang) :
     input_sent = []
